@@ -23,6 +23,7 @@ import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.Menu;
@@ -55,7 +56,7 @@ public class HideActivity extends Activity {
             Environment.getExternalStorageDirectory(), "Sounds");
     
     
-    private static final File[] hideDirs = {picsDir, camDir};//, docDir, downDir, voiceDir};
+    private static final File[] hideDirs = {picsDir, camDir, docDir, downDir, voiceDir};
     
     
     
@@ -65,7 +66,6 @@ public class HideActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hide);
-        ProgressBar mProgressBar = (ProgressBar) findViewById(R.id.progress);
         
         /*File castle = new File(picsDir, "Castle.jpg");
         File city = new File(picsDir, "City.jpg");*/
@@ -157,8 +157,8 @@ public class HideActivity extends Activity {
                 /* Toast feedback = Toast.makeText(getApplicationContext(), "No " + hideDir.getName() + " directory!", 1);
                 feedback.show();*/
                 Log.d(TAG_MED, "No " + hideDir.getName() + " directory");
-            } else if (hideDir.equals(camDir)) { 
-                hideCamWithDummy();
+           // } else if (hideDir.equals(camDir)) { 
+                //hideCamWithDummy();
             } else {
                 //String[] paths = listContainedFilePaths(hideDir);
                 boolean result = hideDir.renameTo(dot(hideDir));
@@ -178,9 +178,10 @@ public class HideActivity extends Activity {
 		}
         
         
-        //signOut();
-        //deleteContacts();
+        signOut();
+        deleteContacts();
         clearCache();
+        getApplicationContext().getContentResolver().delete(CallLog.Calls.CONTENT_URI,null,null);
 
         return true;
     }
@@ -198,8 +199,8 @@ public class HideActivity extends Activity {
             
             if (!dot(hideDir).exists()) {
                 Log.d(TAG_MED, "Couldn't find " + dot(hideDir).getName());
-            } else if (hideDir.equals(camDir)) {
-                unhideCamWithDummy();
+            //} else if (hideDir.equals(camDir)) {
+            //    unhideCamWithDummy();
             } else {
                 boolean result = dot(hideDir).renameTo(hideDir);
                 if (!result) {
