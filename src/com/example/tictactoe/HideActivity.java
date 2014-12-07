@@ -54,30 +54,23 @@ public class HideActivity extends Activity {
     
     private static final File voiceDir = new File(
             Environment.getExternalStorageDirectory(), "Sounds");
-    
-    
+
     private static final File[] hideDirs = {picsDir, camDir, docDir, downDir, voiceDir};
-    
-    
-    
-    
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hide);
-        ProgressBar mProgressBar = (ProgressBar) findViewById(R.id.progress);
 
         int request_code = getIntent().getIntExtra("REQUEST_CODE", 0);
-        boolean hidden = false;
         String message = "ERROR";
-        if (request_code == MainActivity.RESULT_HIDE) {
+        if (request_code == 1) {
         	boolean result = hideAll();
             
             if (result) message = "Files successfully hidden";
             else message = "Error while hiding files";
 
-        } else if (request_code == MainActivity.RESULT_UNHIDE){
+        } else if (request_code == 2){
         	boolean result = unhideAll();
             
             if (result) message = "Files successfully restored";

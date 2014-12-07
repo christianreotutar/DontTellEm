@@ -1,5 +1,6 @@
 package com.example.tictactoe;
 
+import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -22,7 +23,7 @@ public class PasswordFragment extends Fragment {
 			" \n\n", " \n\n", " \n\n"
 	};
 	private boolean x = true;
-	public boolean passwordSet = false;
+	public boolean passwordSet;
 	public boolean passwordEntered = false;
 	public String password = "";
 	public String passwordAttempt = "";
@@ -32,6 +33,8 @@ public class PasswordFragment extends Fragment {
 		View view = inflater.inflate(R.layout.fragment_password, container, false);
 		mGridView = (GridView) view.findViewById(R.id.grid);
 		mGridView.setAdapter(new CustomGrid(getActivity(), maskRA));
+		SharedPreferences mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		passwordSet = mSharedPrefs.getBoolean("passwordSet", false);
 		//final TextView mPlayerText = (TextView) (((MainActivity)getActivity()).findViewById(R.id.playerText));
 		mGridView.setOnItemClickListener(new OnItemClickListener() {
 	        public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
