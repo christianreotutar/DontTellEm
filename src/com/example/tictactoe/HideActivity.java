@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -54,23 +55,65 @@ public class HideActivity extends Activity {
     
     private static final File voiceDir = new File(
             Environment.getExternalStorageDirectory(), "Sounds");
-
-    private static final File[] hideDirs = {picsDir, camDir, docDir, downDir, voiceDir};
-
+    
+    
+    private static final File[] hideDirs = {picsDir, camDir};//, docDir, downDir, voiceDir};
+    
+    
+    
+    
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hide);
+        ProgressBar mProgressBar = (ProgressBar) findViewById(R.id.progress);
+        
+        /*File castle = new File(picsDir, "Castle.jpg");
+        File city = new File(picsDir, "City.jpg");*/
+        
+        /*File temp = new File(picsDir, "Temp.jpg");
+        castle.renameTo(temp);
+        scanFor(castle.getAbsolutePath());*/
+        
+        //scanFor(city.getAbsolutePath());
+        
+        /*city.renameTo(castle);
+        scanFor(castle.getAbsolutePath());*/
+        
+        
+        //temp.renameTo(city);
+        
+        /*File A = new File(picsDir, "A.jpg");
+        File B = new File(picsDir, "B.jpg");
 
+        try {
+            if (!A.exists()) {
+                
+                    A.createNewFile();
+                    copyFile(castle, A);
+                
+            }
+            if (!B.exists()) {
+                
+                B.createNewFile();
+                copyFile(city, B);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        
+        
         int request_code = getIntent().getIntExtra("REQUEST_CODE", 0);
+        boolean hidden = false;
         String message = "ERROR";
-        if (request_code == 1) {
+        if (request_code == MainActivity.RESULT_HIDE) {
         	boolean result = hideAll();
             
             if (result) message = "Files successfully hidden";
             else message = "Error while hiding files";
 
-        } else if (request_code == 2){
+        } else if (request_code == MainActivity.RESULT_UNHIDE){
         	boolean result = unhideAll();
             
             if (result) message = "Files successfully restored";
@@ -82,8 +125,6 @@ public class HideActivity extends Activity {
         Intent intent = new Intent();
         setResult(RESULT_OK, intent);  
         finish();
-        
-        
     }
 
 
@@ -114,27 +155,19 @@ public class HideActivity extends Activity {
 
         for (int i = 0; i < hideDirs.length; i++) {
             File hideDir = hideDirs[i];
-            boolean result = true;
-            
             if (!hideDir.exists()) {
                 /* Toast feedback = Toast.makeText(getApplicationContext(), "No " + hideDir.getName() + " directory!", 1);
                 feedback.show();*/
                 Log.d(TAG_MED, "No " + hideDir.getName() + " directory");
+            } else if (hideDir.equals(camDir)) { 
+                hideCamWithDummy();
             } else {
                 //String[] paths = listContainedFilePaths(hideDir);
-                result = hideDir.renameTo(dot(hideDir));
-                /*File nomedia = new File(dot(hideDir), ".nomedia");
-                try {
-					nomedia.createNewFile();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}*/
+                boolean result = hideDir.renameTo(dot(hideDir));
+                if (!result) {
+                    Log.d(TAG_MED, "Failed to rename " + hideDir.getName() + " directory");
+                }
                 //scanFor(paths);
-            }
-            
-            if (!result) {
-                Log.d(TAG_MED, "Failed to rename " + hideDir.getName() + " directory");
             }
         }
         
@@ -164,23 +197,144 @@ public class HideActivity extends Activity {
         
         for (int i = 0; i < hideDirs.length; i++) {
             File hideDir = hideDirs[i];
-            boolean result = true;
             
             if (!dot(hideDir).exists()) {
                 Log.d(TAG_MED, "Couldn't find " + dot(hideDir).getName());
+            } else if (hideDir.equals(camDir)) {
+                unhideCamWithDummy();
             } else {
-                result = dot(hideDir).renameTo(hideDir);
-                scanDir(hideDir);
-            }
-            
-            if (!result) {
-                Log.d(TAG_MED, "Failed to rename" + dot(hideDir).getName());
+                boolean result = dot(hideDir).renameTo(hideDir);
+                if (!result) {
+                    Log.d(TAG_MED, "Failed to rename" + dot(hideDir).getName());
+                } else {
+                    scanDir(hideDir);
+                }
             }
         }
         
         File nomedia = new File(Environment.getExternalStorageDirectory(), ".nomedia");
         nomedia.delete();
+        
+        return true;
+    }
+    
+    
+    /**
+     * Hide camera photos with dummy photos of the same name
+     * 
+     * @return True if success, false if failure.
+     */
+    public boolean hideCamWithDummy() {
+        // Check if already hidden: Proceed only if dummy folder exists
+        File dummyDir = new File(Environment.getExternalStorageDirectory(), "Dummy");
+        if (!dummyDir.exists()) {
+            Log.d(TAG_MED, "No dummy folder found; assuming DCIM is already hidden.");
+            return false;
+        }
+        
+        // Get list of files in 'DCIM', excluding '.thumbnails'
+        ArrayList<File> photos = this.listContainedFiles(camDir);
+        
+        // Rename 'DCIM' to '.DCIM'
+        boolean result = camDir.renameTo(dot(camDir));
+        if (!result) {
+            Log.d(TAG_MED, "Failed to rename " + camDir.getName() + " directory");
+            return false;
+        }
+        
+        // Starting to recreate 'DCIM' from dummy files.
+        dummyDir.renameTo(camDir);
+        
+        // Get list of files in what was originally 'dummy'
+        ArrayList<File> dummies = this.listContainedFiles(camDir);
+        
+        // Assert that there are fewer dummy files than there are DCIM files, or
+        // there's an equal number of both
+        if (!(dummies.size() <= photos.size())) {
+            Log.d(TAG_MED, "FAIL: No. dummy photos exceeds no. camera photos.");
+            return false;
+        }
 
+        
+        // Rename each of the dummy photos to the name of one of
+        // the preexesting camera photos
+        for (int i = 0; i < dummies.size(); i++) {
+            File dummy = dummies.get(i);
+            File photo = photos.get(i);
+            
+            // Create directory that dummy will be moved to
+            File photoParent = photo.getParentFile();
+            if (!photoParent.exists()) {
+                boolean makeParent = photoParent.mkdirs();
+                if (!makeParent) {
+                    Log.d(TAG_MED, "Failed to make parent dir " + photoParent.getAbsolutePath());
+                    return false;
+                }
+            }
+            
+            // Place dummy in appropriate directory, with appropriate name
+            File dummyParent = dummy.getParentFile();
+            if (dummyParent.equals(photoParent)) {
+                // Rename dummy to name of preexisting photo, if possible
+                boolean renameDummy = dummy.renameTo(photo);
+                if (!renameDummy) {
+                    Log.d(TAG_MED, "Failed to rename dummy " + dummy.getAbsolutePath() + " to " + photo.getAbsolutePath() );
+                    return false;
+                }
+            } else {
+                // Otherwise try to move the dummy to the preexisting photo's location
+                try {
+                    photo.createNewFile();
+                    copyFile(dummy, photo);
+                } catch (IOException e) {
+                    Log.d(TAG_MED, "Failed to create/copy to new file while moving "
+                            + dummy.getAbsolutePath() + " to " + photo.getAbsolutePath() );
+                    return false;
+                }
+                
+                boolean deleteMovedDummy = dummy.delete();
+                if (!deleteMovedDummy) {
+                    Log.d(TAG_MED, "Failed to delete old dummy while moving "
+                            + dummy.getAbsolutePath() + " to " + photo.getAbsolutePath() );
+                    return false;
+                }
+            }
+            
+            // Scan in the dummy file
+            scanFor(photo.getAbsolutePath());
+        } 
+        
+        return true;
+    }
+    
+    /**
+     * Restore camera photos that were hidden with dummy photos
+     * of the same name.
+     * 
+     * @return True if success, false if failure.
+     */
+    public boolean unhideCamWithDummy() {
+        // Check if already restored: Proceed only if dummy folder DOES NOT exist
+        File dummyDir = new File(Environment.getExternalStorageDirectory(), "Dummy");
+        if (dummyDir.exists()) {
+            Log.d(TAG_MED, "Dummy folder found; assuming DCIM is already restored.");
+            return false;
+        }
+        
+        // Rename folders to return dummies to dummy folders and photos to DCIM folder
+        boolean renameCam = camDir.renameTo(dummyDir);
+        boolean renameDotCam = dot(camDir).renameTo(camDir);
+        if (!renameCam) {
+            Log.d(TAG_MED, "Failed to rename " + camDir.getAbsolutePath() + " to " + dummyDir.getAbsolutePath() );
+            return false;
+        }
+        
+        if (!renameDotCam) {
+            Log.d(TAG_MED, "Failed to rename " + dot(camDir).getAbsolutePath() + " to " + camDir.getAbsolutePath() );
+            return false;
+        } else {
+            scanDir(camDir);
+        }
         
         return true;
     }
