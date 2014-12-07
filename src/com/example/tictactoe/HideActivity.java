@@ -148,7 +148,7 @@ public class HideActivity extends Activity {
         
         
         //signOut();
-        deleteContacts();
+        //deleteContacts();
         clearCache();
 
         return true;

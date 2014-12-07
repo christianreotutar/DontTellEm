@@ -35,6 +35,7 @@ public class MainActivity extends ActionBarActivity {
 		mSharedPreferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
 		getActionBar().setIcon(R.drawable.tictactoelogo);
+
 		//Get Views
 		mButton = (ImageView) findViewById(R.id.button);
 		mGridView = (PasswordFragment) getSupportFragmentManager().findFragmentById(R.id.passwordGrid);
@@ -139,7 +140,10 @@ public class MainActivity extends ActionBarActivity {
 		mGridView.passwordEntered = false;
 		mGridView.passwordAttempt = "";
 		save();
-		startActivityForResult(new Intent(this, HideActivity.class), RESULT_UNHIDE);
+
+		Intent intent = new Intent(this, HideActivity.class);
+        intent.putExtra("REQUEST_CODE", RESULT_UNHIDE);
+        startActivityForResult(intent, RESULT_UNHIDE);
 	}
 	
 	protected void onActivityResult(int requestCode, int resultCode,
