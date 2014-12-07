@@ -1,11 +1,9 @@
 package com.example.tictactoe;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -13,9 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -27,8 +23,7 @@ public class MainActivity extends ActionBarActivity {
 	TextView mPlayerText;
 	TutorialFragment tutorialFrag;
 	TextView tutorialText;
-	SharedPreferences mSharedPreferences;
-	final Context context = this;
+	public SharedPreferences mSharedPreferences;
 	private boolean locked;
 	protected boolean first_use;
 	private String password;
@@ -41,7 +36,6 @@ public class MainActivity extends ActionBarActivity {
 		mButton = (ImageView) findViewById(R.id.button);
 		mGridView = (PasswordFragment) getSupportFragmentManager().findFragmentById(R.id.passwordGrid);
 		getSupportFragmentManager().beginTransaction().hide(mGridView).commit();
-		mPlayerText = (TextView) findViewById(R.id.playerText);
 		tutorialFrag = (TutorialFragment) getSupportFragmentManager().findFragmentById(R.id.tutorialFragment);
 		tutorialText = (TextView) tutorialFrag.getView().findViewById(R.id.fragText);
 
@@ -82,6 +76,8 @@ public class MainActivity extends ActionBarActivity {
 		if (id == R.id.action_new) {
 			mGridView.resetGrid();
 			return true;
+		} else if (id == R.id.action_settings) {
+			startActivity(new Intent(this, Settings.class));
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -111,13 +107,8 @@ public class MainActivity extends ActionBarActivity {
 		this.password = mSharedPreferences.getString("passwordString", "");
 		this.locked = mSharedPreferences.getBoolean("locked", false);
 	}
-	
-	private void choosePhotos() {
-		//TODO
-	}
 
 	public void passwordSet() {
-		TextView tutorialText = (TextView) tutorialFrag.getView().findViewById(R.id.fragText);
 		if (mGridView.passwordSet){
 			password = mGridView.password;
 			tutorialText.setText(getResources().getString(R.string.tutorialE));
@@ -128,11 +119,9 @@ public class MainActivity extends ActionBarActivity {
 	public void passwordEntered() {
 		mGridView.resetGrid();
 		getSupportFragmentManager().beginTransaction().hide(mGridView).commit();
-		if (first_use) {
-			((TextView) findViewById(R.id.otherText)).setVisibility(View.INVISIBLE);
-			getSupportFragmentManager().beginTransaction().hide(tutorialFrag).commit();
-			first_use = false;
-		}
+		getSupportFragmentManager().beginTransaction().hide(tutorialFrag).commit();
+		((TextView) findViewById(R.id.otherText)).setVisibility(View.INVISIBLE);
+		first_use = false;
 		mButton.setVisibility(View.VISIBLE);
 		mGridView.passwordEntered = false;
 		mGridView.passwordAttempt = "";

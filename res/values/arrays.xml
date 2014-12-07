@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="resetOption">
+        <item name="1">Yes</item>
+        <item name="2">No</item>
+    </string-array>
+    <string-array name="resetOption_values">
+        <item name="1">1</item>
+        <item name="2">2</item>
+    </string-array>
+</resources>
