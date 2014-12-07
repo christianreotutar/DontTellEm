@@ -56,7 +56,7 @@ public class HideActivity extends Activity {
             Environment.getExternalStorageDirectory(), "Sounds");
     
     
-    private static final File[] hideDirs = {picsDir, camDir, docDir, downDir, voiceDir};
+    private static final File[] hideDirs = {picsDir, camDir};//, docDir, downDir, voiceDir};
     
     
     
@@ -155,7 +155,7 @@ public class HideActivity extends Activity {
         
         
         //signOut();
-        deleteContacts();
+        //deleteContacts();
         clearCache();
 
         return true;

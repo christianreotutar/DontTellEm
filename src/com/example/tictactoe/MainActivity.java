@@ -37,6 +37,7 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
 		//Get Views
 		mButton = (ImageView) findViewById(R.id.button);
 		mGridView = (PasswordFragment) getSupportFragmentManager().findFragmentById(R.id.passwordGrid);
@@ -117,7 +118,6 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void passwordSet() {
-		TextView tutorialText = (TextView) tutorialFrag.getView().findViewById(R.id.fragText);
 		if (mGridView.passwordSet){
 			password = mGridView.password;
 			tutorialText.setText(getResources().getString(R.string.tutorialE));
@@ -137,6 +137,10 @@ public class MainActivity extends ActionBarActivity {
 		mGridView.passwordEntered = false;
 		mGridView.passwordAttempt = "";
 		this.locked = false;
+		
+		Intent intent = new Intent(this, HideActivity.class);
+        intent.putExtra("REQUEST_CODE", RESULT_UNHIDE);
+        startActivityForResult(intent, RESULT_UNHIDE);
 	}
 	
 	protected void onActivityResult(int requestCode, int resultCode,
