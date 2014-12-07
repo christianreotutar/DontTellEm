@@ -23,18 +23,18 @@ public class PasswordFragment extends Fragment {
 			" \n\n", " \n\n", " \n\n"
 	};
 	private boolean x = true;
-	public boolean passwordSet;
+	public boolean passwordSet = false;
 	public boolean passwordEntered = false;
 	public String password = "";
 	public String passwordAttempt = "";
 	int numchars = 0;
+	SharedPreferences mSharedPrefs;
 	
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_password, container, false);
+		mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		mGridView = (GridView) view.findViewById(R.id.grid);
 		mGridView.setAdapter(new CustomGrid(getActivity(), maskRA));
-		SharedPreferences mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-		passwordSet = mSharedPrefs.getBoolean("passwordSet", false);
 		//final TextView mPlayerText = (TextView) (((MainActivity)getActivity()).findViewById(R.id.playerText));
 		mGridView.setOnItemClickListener(new OnItemClickListener() {
 	        public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -43,19 +43,19 @@ public class PasswordFragment extends Fragment {
 		        		password += "" + position;
 			        	numchars++;
 			        	if (numchars == 5) {
+			        		passwordSet = true;
 				        	savePassword();
 				        	passwordAttempt = "";
 			        	}
 		        	}
 	        	} else if (!passwordEntered) {
 	        		passwordAttempt += "" + position;
-	        		//Toast.makeText(getActivity(), passwordAttempt, Toast.LENGTH_SHORT).show();
 		        	checkPassword();
 	        	}
 	        	// Mark tile as x or o
-	        	if (x && !((TextView) v).getText().equals("\nX\n")) {
+	        	if (x && !((TextView) v).getText().toString().equals("\nX\n")) {
 	        		((TextView) v).setText("\nX\n");
-	        	} else if (!x && !((TextView) v).getText().equals("\nO\n")){
+	        	} else if (!x && !((TextView) v).getText().toString().equals("\nO\n")){
 	        		((TextView) v).setText("\nO\n");
 	        	}
 	        	x = !x;
@@ -63,29 +63,48 @@ public class PasswordFragment extends Fragment {
 	    });
 		return view;
 	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		passwordSet = mSharedPrefs.getBoolean("passwordSet", false);
+		if (passwordSet) {
+			password = mSharedPrefs.getString("passwordString", "");
+		}
+		passwordEntered = false;
+	}
 
 	public void savePassword() {
 		passwordSet = true;
 		Editor editor = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
-		editor.putBoolean("passwordSet", passwordSet);
+		editor.putBoolean("passwordSet", true);
+		editor.putBoolean("locked", true);
+		editor.putString("passwordString", password);
 		editor.commit();
 		resetGrid();
-		Toast.makeText(getActivity(), "Password saved: " + password, Toast.LENGTH_SHORT).show();
+		Toast.makeText(getActivity(), "Password saved", Toast.LENGTH_SHORT).show();
 		((MainActivity) getActivity()).passwordSet();
 	}
 
 	public void resetGrid() {
 		passwordAttempt = "";
+		numchars = 0;
 		mGridView.setAdapter(new CustomGrid(getActivity(), maskRA));
 	}
 
 	private void checkPassword() {
 		if (passwordAttempt.equals(password)) {
-			Toast.makeText(getActivity(), "Unlocked", Toast.LENGTH_LONG).show();
 			passwordEntered = true;
 			passwordAttempt = "";
 			((MainActivity) getActivity()).passwordEntered();
 		}
+	}
+	
+	public void newPassword() {
+		password = "";
+		numchars = 0;
+		passwordAttempt = "";
+		passwordEntered = false;
 	}
 	
 }

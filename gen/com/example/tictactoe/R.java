@@ -1272,10 +1272,9 @@ containing a value of this type.
         public static final int action_new=0x7f0a000f;
         public static final int action_settings=0x7f0a0010;
         public static final int app_name=0x7f0a000d;
-        public static final int hello_world=0x7f0a0018;
-        public static final int reset_string=0x7f0a0019;
+        public static final int hello_world=0x7f0a0017;
+        public static final int reset_string=0x7f0a0018;
         public static final int start=0x7f0a000e;
-        public static final int title_activity_hide=0x7f0a0017;
         public static final int tutorial=0x7f0a0011;
         public static final int tutorialB=0x7f0a0012;
         public static final int tutorialC=0x7f0a0013;

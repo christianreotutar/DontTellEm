@@ -368,10 +368,9 @@ int string abc_shareactionprovider_share_with_application 0x7f0a000b
 int string action_new 0x7f0a000f
 int string action_settings 0x7f0a0010
 int string app_name 0x7f0a000d
-int string hello_world 0x7f0a0018
-int string reset_string 0x7f0a0019
+int string hello_world 0x7f0a0017
+int string reset_string 0x7f0a0018
 int string start 0x7f0a000e
-int string title_activity_hide 0x7f0a0017
 int string tutorial 0x7f0a0011
 int string tutorialB 0x7f0a0012
 int string tutorialC 0x7f0a0013

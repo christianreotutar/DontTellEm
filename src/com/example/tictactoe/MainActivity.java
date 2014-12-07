@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -43,6 +44,7 @@ public class MainActivity extends ActionBarActivity {
 		tutorialFrag = (TutorialFragment) getSupportFragmentManager().findFragmentById(R.id.tutorialFragment);
 		tutorialText = (TextView) tutorialFrag.getView().findViewById(R.id.fragText);
 		this.first_use = mSharedPreferences.getBoolean("first_use", true);
+		//if (first_use) Toast.makeText(this, "Welcome!", Toast.LENGTH_SHORT).show();
 		this.password = mSharedPreferences.getString("passwordString", "");
 		this.locked = mSharedPreferences.getBoolean("locked", false);
 		if (!first_use) {
@@ -57,7 +59,9 @@ public class MainActivity extends ActionBarActivity {
 			}
 		});
 		if (locked) {
-			this.buttonClicked(mButton);
+			//hide button, show grid
+			mButton.setVisibility(View.INVISIBLE);
+			getSupportFragmentManager().beginTransaction().show(mGridView).commit();
 		}
 
 	}
@@ -83,24 +87,34 @@ public class MainActivity extends ActionBarActivity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	public void buttonClicked(View v) {
+		mSharedPreferences.edit().putBoolean("passwordSet", false).commit();
+		first_use = mSharedPreferences.getBoolean("first_use", true);
+		mGridView.newPassword();
 		if (!first_use) {
 			Intent intent = new Intent(this, HideActivity.class);
 			intent.putExtra("REQUEST_CODE", RESULT_HIDE);
 			startActivityForResult(intent, RESULT_HIDE);
 		} else {
 			// Hide button, show grid
+			((TextView)(tutorialFrag.getView().findViewById(R.id.fragText))).setText(R.string.tutorialD);
 			mButton.setVisibility(View.INVISIBLE);
 			getSupportFragmentManager().beginTransaction().show(mGridView).commit();
 			this.locked = true;
-			tutorialText.setText(getResources().getString(R.string.tutorialD));
 		}
+		Toast.makeText(this, "Enter a new password", Toast.LENGTH_SHORT).show();
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
+		save();
+	}
+	
+	@Override
+	public void onStop() {
+		super.onStop();
 		save();
 	}
 	
@@ -119,13 +133,36 @@ public class MainActivity extends ActionBarActivity {
 		this.first_use = mSharedPreferences.getBoolean("first_use", true);
 		this.password = mSharedPreferences.getString("passwordString", "");
 		this.locked = mSharedPreferences.getBoolean("locked", false);
+		if (locked) {
+			//hide button, show grid
+			mButton.setVisibility(View.INVISIBLE);
+			getSupportFragmentManager().beginTransaction().show(mGridView).commit();
+		}
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		this.first_use = mSharedPreferences.getBoolean("first_use", true);
+		this.password = mSharedPreferences.getString("passwordString", "");
+		this.locked = mSharedPreferences.getBoolean("locked", false);
+		if (locked) {
+			//hide button, show grid
+			mButton.setVisibility(View.INVISIBLE);
+			getSupportFragmentManager().beginTransaction().show(mGridView).commit();
+		}
 	}
 
 	public void passwordSet() {
-		if (mGridView.passwordSet){
-			password = mGridView.password;
-			tutorialText.setText(getResources().getString(R.string.tutorialE));
-			((TextView) findViewById(R.id.otherText)).setVisibility(View.VISIBLE);
+		if (mSharedPreferences.getBoolean("passwordSet", false)){
+			password = mSharedPreferences.getString("passwordString", "");
+			//Toast.makeText(this, password + "", Toast.LENGTH_SHORT).show();
+			if (first_use) {
+				((TextView)(tutorialFrag.getView().findViewById(R.id.fragText))).setText(R.string.tutorialE);
+				((TextView) findViewById(R.id.otherText)).setVisibility(View.VISIBLE);
+			}
+			this.locked = true;
+			save();
 		}
 	}
 	
@@ -137,8 +174,6 @@ public class MainActivity extends ActionBarActivity {
 		this.locked = false;
 		this.first_use = false;
 		mButton.setVisibility(View.VISIBLE);
-		mGridView.passwordEntered = false;
-		mGridView.passwordAttempt = "";
 		save();
 
 		Intent intent = new Intent(this, HideActivity.class);
@@ -154,7 +189,6 @@ public class MainActivity extends ActionBarActivity {
 				mButton.setVisibility(View.INVISIBLE);
 				getSupportFragmentManager().beginTransaction().show(mGridView).commit();
 				this.locked = true;
-				if (first_use) tutorialText.setText(getResources().getString(R.string.tutorialD));
             }
         } else if (requestCode == RESULT_UNHIDE) {
         	if (resultCode == RESULT_OK) {
